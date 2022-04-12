@@ -489,6 +489,15 @@ fn generate_event_content_impl<'a>(
         }
     }
 
+    let state_event_content_impl = (event_kind == Some(EventKind::State)).then(|| {
+        quote! {
+            #[automatically_derived]
+            impl #ruma_common::events::StateEventContent for #ident {
+                type StateKey = String;
+            }
+        }
+    });
+
     Ok(quote! {
         #event_type_ty_decl
 
@@ -513,6 +522,8 @@ fn generate_event_content_impl<'a>(
                 #serde_json::from_str(content.get())
             }
         }
+
+        #state_event_content_impl
     })
 }
 

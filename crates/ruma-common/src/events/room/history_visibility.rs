@@ -86,3 +86,7 @@ impl HistoryVisibility {
         self.as_ref()
     }
 }
+
+impl RoomHistoryVisibilityEvent {
+    // TODO
+}
