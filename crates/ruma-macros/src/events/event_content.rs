@@ -6,7 +6,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
     parse::{Parse, ParseStream},
-    DeriveInput, Field, Ident, LitStr, Token,
+    DeriveInput, Field, Ident, LitStr, Token, Type,
 };
 
 use crate::util::m_prefix_name_to_type_name;
@@ -21,6 +21,8 @@ mod kw {
     // The kind of event content this is.
     syn::custom_keyword!(kind);
     syn::custom_keyword!(type_fragment);
+    // The type to use for a state events' `state_key` field.
+    syn::custom_keyword!(state_key_type);
 }
 
 /// Parses attributes for `*EventContent` derives.
@@ -43,6 +45,8 @@ enum EventMeta {
     /// The given field holds a part of the event type (replaces the `*` in a `m.foo.*` event
     /// type).
     TypeFragment,
+
+    StateKeyType(Box<Type>),
 }
 
 impl EventMeta {
@@ -71,7 +75,7 @@ impl Parse for EventMeta {
         } else if lookahead.peek(kw::kind) {
             let _: kw::kind = input.parse()?;
             let _: Token![=] = input.parse()?;
-            EventKind::parse(input).map(EventMeta::Kind)
+            input.parse().map(EventMeta::Kind)
         } else if lookahead.peek(kw::skip_redaction) {
             let _: kw::skip_redaction = input.parse()?;
             Ok(EventMeta::SkipRedaction)
@@ -81,6 +85,9 @@ impl Parse for EventMeta {
         } else if lookahead.peek(kw::type_fragment) {
             let _: kw::type_fragment = input.parse()?;
             Ok(EventMeta::TypeFragment)
+        } else if lookahead.peek(kw::state_key_type) {
+            let _: kw::state_key_type = input.parse()?;
+            input.parse().map(EventMeta::StateKeyType)
         } else {
             Err(lookahead.error())
         }

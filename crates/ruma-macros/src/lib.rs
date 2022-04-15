@@ -5,6 +5,7 @@
 //! See the documentation for the individual macros for usage details.
 
 #![warn(missing_docs)]
+#![feature(proc_macro_diagnostic)]
 
 use identifiers::expand_id_zst;
 use proc_macro::TokenStream;
